@@ -8,8 +8,9 @@
 import Foundation
 
 public struct ModelEntity {
+  public let id: String
   public let name: String
-  public let version: String
+  public let version: Int
   
   public var versionedName: String {
     "\(name)_\(version)"
