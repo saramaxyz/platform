@@ -62,4 +62,26 @@ public class ModelLocalStore: ModelStorable {
       print("Error saving local model: \(error.localizedDescription)")
     }
   }
+  
+  public func deleteOldVersions(of model: ModelEntity) {
+    let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+    
+    do {
+      // Getting a list of all files in the directory
+      let files = try fileManager.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)
+      
+      // Filtering files which contain the modelId in their name and are older versions
+      let olderModelFiles = files.filter {
+        $0.lastPathComponent.contains(model.id) && !$0.lastPathComponent.contains(model.versionedName)
+      }
+      
+      // Removing older version files
+      for fileURL in olderModelFiles {
+        try fileManager.removeItem(at: fileURL)
+      }
+    } catch {
+      print("Error while deleting older versions of model: \(error.localizedDescription)")
+    }
+  }
+
 }
