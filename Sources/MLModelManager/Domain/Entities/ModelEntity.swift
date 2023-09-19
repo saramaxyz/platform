@@ -13,6 +13,6 @@ public struct ModelEntity {
   public let version: Int
   
   public var versionedName: String {
-    "\(name)_\(version)"
+    "\(id)_\(version)"
   }
 }
