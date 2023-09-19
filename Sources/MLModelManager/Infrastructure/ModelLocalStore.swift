@@ -50,8 +50,7 @@ public class ModelLocalStore: ModelStorable {
   
   public func saveLocalModel(_ model: ModelEntity, url: URL) {
     let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-    let modelNameWithVersion = "\(model.id)_\(model.version)"
-    let destinationURL = documentsDirectory.appendingPathComponent(modelNameWithVersion)
+    let destinationURL = documentsDirectory.appendingPathComponent(model.versionedName)
     
     do {
       if fileManager.fileExists(atPath: destinationURL.path) {
