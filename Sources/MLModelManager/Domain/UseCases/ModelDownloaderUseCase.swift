@@ -8,5 +8,11 @@
 import Foundation
 
 public protocol ModelDownloaderUseCase {
-  func downloadModel(model: ModelEntity, from url: URL) async throws -> URL
+  func downloadModel(_ model: ModelEntity, completion: @escaping (Result<URL, Error>) -> Void)
+  func addModel(_ model: ModelEntity)
+  func addModels(_ models: [ModelEntity])
+}
+
+public protocol ModelDownloadDelegate: AnyObject {
+  func modelDownloadDidProgress(_ downloader: ModelDownloader, taskId: Int, progress: Float)
 }
