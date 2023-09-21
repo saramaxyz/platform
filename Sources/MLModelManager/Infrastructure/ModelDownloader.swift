@@ -14,6 +14,7 @@ public class ModelDownloader: NSObject, ModelDownloaderUseCase {
   private let modelStore: ModelLocalStore
   private var modelDataSource: [String: ModelEntity] = [:]
   public weak var delegate: ModelDownloadDelegate?
+  public var progressUpdate: ((Float) -> Void)?
   
   public init(modelStore: ModelLocalStore) {
     self.modelStore = modelStore
@@ -30,7 +31,7 @@ public class ModelDownloader: NSObject, ModelDownloaderUseCase {
   }
   
   public func addModel(_ model: ModelEntity) {
-    modelDataSource[model.id] = model
+    modelDataSource[model.versionedName] = model
   }
   
   public func addModels(_ models: [ModelEntity]) {
@@ -40,33 +41,48 @@ public class ModelDownloader: NSObject, ModelDownloaderUseCase {
 
 extension ModelDownloader: URLSessionDownloadDelegate {
   public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-    // Handle download completion: move file to permanent location, save in local store, and call completion handler
-    guard let modelId = downloadTask.originalRequest?.url?.lastPathComponent,
-          let model = getModel(by: modelId),
+    guard let modelName = downloadTask.originalRequest?.url?.lastPathComponent,
+          let model = getModel(by: modelName),
           let completionHandler = downloadCompletionHandlers[downloadTask] else {
       return
     }
     
     do {
-      let destinationURL = modelStore.getLocalModelURL(for: model.id, version: model.version) ?? createDestinationURL(for: model)
-      try FileManager.default.moveItem(at: location, to: destinationURL)
+      let destinationURL = modelStore.getLocalModelURL(for: model.name, version: model.version) ?? createDestinationURL(for: model)
       
-      modelStore.saveLocalModel(model, url: destinationURL)
+      // Check if directory exists, if not create it
+      let directoryURL = destinationURL.deletingLastPathComponent()
+      if !FileManager.default.fileExists(atPath: directoryURL.path) {
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+      }
       
       // Delete older versions
       deleteOldVersions(of: model)
       
+      // Move file to destination
+      if FileManager.default.fileExists(atPath: destinationURL.path) {
+        try FileManager.default.removeItem(at: destinationURL)
+      }
+      try FileManager.default.moveItem(at: location, to: destinationURL)
+      
       completionHandler(.success(destinationURL))
     } catch {
+      print("Error detail: \(error.localizedDescription)")
       completionHandler(.failure(error))
     }
   }
+
   
   public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
     // Update downloadProgress dictionary to track progress
     let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
     downloadProgress[downloadTask] = progress
-    delegate?.modelDownloadDidProgress(self, taskId: downloadTask.taskIdentifier, progress: progress)
+    // delegate?.modelDownloadDidProgress(self, taskId: downloadTask.taskIdentifier, progress: progress)
+    
+    guard let modelName = downloadTask.originalRequest?.url?.lastPathComponent else {
+      return
+    }
+    delegate?.modelDownloadProgress(forModel: modelName, progress: progress)
   }
   
   public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
@@ -79,12 +95,13 @@ extension ModelDownloader: URLSessionDownloadDelegate {
 
 private extension ModelDownloader {
   func getModel(by id: String) -> ModelEntity? {
-    modelDataSource[id]
+    guard let name = id.components(separatedBy: ".").first else { return nil }
+    return modelDataSource[name]
   }
   
   func createDestinationURL(for model: ModelEntity) -> URL {
     let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    return documentsDirectory.appendingPathComponent(model.versionedName)
+    return documentsDirectory.appendingPathComponent(model.versionedName + ".mlmodel")
   }
   
   func deleteOldVersions(of model: ModelEntity) {

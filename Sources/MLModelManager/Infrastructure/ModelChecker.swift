@@ -7,22 +7,17 @@
 
 import Foundation
 
-public class ModelChecker: ModelCheckerUseCase {
+class ModelChecker: ModelCheckerUseCase {
   private let localModelStore: ModelStorable
   
-  public init(localModelStore: ModelStorable) {
+  init(localModelStore: ModelStorable) {
     self.localModelStore = localModelStore
   }
   
-  public func checkLocalModelVersion(model: ModelEntity) -> Bool {
-    // If no local version is available, return false
-    if localModelStore.getLocalModelVersion(for: model.id) == nil {
-      return false
-    }
-    
+  func checkLocalModelVersion(modelName: String, remoteVersion: Int) -> Bool {
     // Get the version of the local model
-    if let localVersion = localModelStore.getLocalModelVersion(for: model.id) {
-      return localVersion >= model.version
+    if let localVersion = localModelStore.getLocalModelVersion(for: modelName) {
+      return localVersion >= remoteVersion
     }
     
     // If the local version is nil, then it needs to be downloaded
