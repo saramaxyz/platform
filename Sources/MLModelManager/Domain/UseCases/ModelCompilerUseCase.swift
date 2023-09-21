@@ -8,6 +8,6 @@
 import Foundation
 import CoreML
 
-public protocol ModelCompilerUseCase {
+protocol ModelCompilerUseCase {
   func compileModel(model: ModelEntity, from localURL: URL) async throws -> MLModel
 }

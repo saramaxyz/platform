@@ -7,6 +7,6 @@
 
 import Foundation
 
-public protocol ModelCheckerUseCase {
-  func checkLocalModelVersion(model: ModelEntity) -> Bool
+protocol ModelCheckerUseCase {
+  func checkLocalModelVersion(modelName: String, remoteVersion: Int) -> Bool
 }

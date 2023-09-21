@@ -14,6 +14,8 @@ public enum ModelError: Error {
   case fileWriteError
   case downloadError(String)
   case compilationError(String)
+  case failedToLoadModel(String)
+  case modelNotFound
   
   var localizedDescription: String {
     switch self {
@@ -29,6 +31,10 @@ public enum ModelError: Error {
       return "An error occurred during the network request"
     case .fileWriteError:
       return "An error occurred during the file writing"
+    case .failedToLoadModel(let message):
+      return "An error occurred while loading the model: \(message)"
+    case .modelNotFound:
+      return "The model not found!"
     }
   }
 }

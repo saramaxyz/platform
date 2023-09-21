@@ -8,14 +8,14 @@
 import Foundation
 import CoreML
 
-public class ModelCompiler: ModelCompilerUseCase {
+class ModelCompiler: ModelCompilerUseCase {
   private let fileManager: FileManager
   
-  public init(fileManager: FileManager = .default) {
+  init(fileManager: FileManager = .default) {
     self.fileManager = fileManager
   }
   
-  public func compileModel(model: ModelEntity, from localURL: URL) async throws -> MLModel {
+  func compileModel(model: ModelEntity, from localURL: URL) async throws -> MLModel {
     // Create a URL for the compiled model
     let applicationSupportDirectoryURL = try fileManager.url(for: .applicationSupportDirectory,
                                                              in: .userDomainMask,
