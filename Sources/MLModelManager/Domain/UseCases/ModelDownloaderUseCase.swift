@@ -33,4 +33,5 @@ public extension ModelDownloaderUseCase {
 
 public protocol ModelDownloadDelegate: AnyObject {
   func modelDownloadProgress(forModel modelName: String, progress: Float)
+  func handleAllTasksCompleted()
 }

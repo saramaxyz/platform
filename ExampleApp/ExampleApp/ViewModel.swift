@@ -13,7 +13,7 @@ class ViewModel: ObservableObject {
   @Published var modelDescription: String?
   @Published var downloadProgress: Float?
   
-  init(mlModelManager: MLModelManager = .make(apiKey: "your_token_here")) {
+  init(mlModelManager: MLModelManager) {
     self.mlModelManager = mlModelManager
   }
   
