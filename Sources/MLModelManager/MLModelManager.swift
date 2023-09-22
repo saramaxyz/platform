@@ -7,14 +7,16 @@
 
 import CoreML
 
-public class MLModelManager {
+public class MLModelManager: NSObject {
+  public static let backgroundIdentifier = "com.app.backgroundModelDownload"
   private let modelChecker: ModelCheckerUseCase
   private let modelCompiler: ModelCompilerUseCase
-  private var modelDownloader: ModelDownloaderUseCase
+  internal var modelDownloader: ModelDownloaderUseCase
   private let localModelStore: ModelStorable
   private let modelServer: ModelServer
+  public var backgroundSessionCompletionHandler: (() -> Void)?
   private var downloadProgressClosures: [String: (Float) -> Void] = [:]
-  
+
   init(modelChecker: ModelCheckerUseCase,
               modelCompiler: ModelCompilerUseCase,
               modelDownloader: ModelDownloaderUseCase,
@@ -137,4 +139,9 @@ extension MLModelManager: ModelDownloadDelegate {
   public func modelDownloadProgress(forModel modelName: String, progress: Float) {
     downloadProgressClosures[modelName]?(progress)
   }
+  
+  public func handleAllTasksCompleted() {
+    backgroundSessionCompletionHandler?()
+    backgroundSessionCompletionHandler = nil
+}
 }

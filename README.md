@@ -11,6 +11,7 @@ Features:
 - **Model Compilation**: Compile downloaded models, readying them for integration with your app.
 - **Model Storage**: Models are stored locally and can be managed to ensure only the latest version is kept.
 - **Seamless Integration**: Designed with Swift's modern features in mind, it integrates well with other iOS components.
+- **Background support**: Ensuring downloads continue even if the app goes into the background.
 
 ### Installation Steps:
 
@@ -75,10 +76,65 @@ modelManager.getModel(modelName: "YourModelName", bundledModelURL: nil, progress
         print(error.localizedDescription)
     }
 })
-
 ```
 
 Replace `"YourModelName"` with the name of the model you wish to fetch.
+
+### Background Support
+
+`MLModelManager` SDK supports background downloads, ensuring that the download of ML models continues even if your app goes to the background. Here's how to set it up:
+
+#### Enable Background Modes Capability:
+
+1. Open your project in Xcode.
+2. Select the app target and navigate to the "Signing & Capabilities" tab.
+3. Click the "+" button and add the "Background Modes" capability.
+4. Check the "Background fetch" and "Background processing" options.
+
+#### AppDelegate Setup:
+
+If you're using `UIKit`, ensure the `AppDelegate` integrates with the `MLModelManager`:
+
+```swift
+import UIKit
+import MLModelManager
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+  let mlModelManager: MLModelManager = .make(apiKey: "your_token_here")
+  
+  func application(_ application: UIApplication,
+                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    return true
+  }
+  
+  func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+    if identifier == MLModelManager.backgroundIdentifier {
+      mlModelManager.backgroundSessionCompletionHandler = completionHandler
+    }
+  }
+}
+
+```
+
+#### Integration with SwiftUI:
+
+If you're using SwiftUI, you can use the `AppDelegate` as follows:
+
+```swift
+@main
+struct ExampleAppApp: App {
+  @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+  
+  var body: some Scene {
+    WindowGroup {
+      ContentView(viewModel: ViewModel(mlModelManager: appDelegate.mlModelManager))
+    }
+  }
+}
+
+```
+
+By integrating these steps, you ensure that the `MLModelManager` handles model downloads efficiently, even in the background.
 
 ## Contributing
 
