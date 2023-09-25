@@ -56,7 +56,7 @@ To start using `AeroEdge`, you'll first need to initialize it using your `apiKey
 import AeroEdge
 
 let apiKey = "YOUR_API_KEY_HERE"
-let modelManager = AeroEdge.make(apiKey: apiKey)
+let aeroEdge = AeroEdge.make(apiKey: apiKey)
 ```
 
 ### Fetching a Model:
@@ -64,7 +64,7 @@ let modelManager = AeroEdge.make(apiKey: apiKey)
 After initializing the manager, fetching a model becomes a breeze.
 
 ```swift
-modelManager.getModel(modelName: "YourModelName", bundledModelURL: nil, progress: { progress in
+aeroEdge.getModel(modelName: "YourModelName", bundledModelURL: nil, progress: { progress in
     print("Download Progress: \(progress)")
 }, completion: { result, isFinal in
     switch result {
@@ -100,20 +100,19 @@ import UIKit
 import AeroEdge
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-  let AeroEdge: AeroEdge = .make(apiKey: "your_token_here")
-  
+  let aeroEdge: AeroEdge = .make(apiKey: "your_token_here")
+
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     return true
   }
-  
+
   func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
     if identifier == AeroEdge.backgroundIdentifier {
       AeroEdge.backgroundSessionCompletionHandler = completionHandler
     }
   }
 }
-
 ```
 
 #### Integration with SwiftUI:
@@ -124,14 +123,13 @@ If you're using SwiftUI, you can use the `AppDelegate` as follows:
 @main
 struct ExampleAppApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-  
+
   var body: some Scene {
     WindowGroup {
       ContentView(viewModel: ViewModel(AeroEdge: appDelegate.AeroEdge))
     }
   }
 }
-
 ```
 
 By integrating these steps, you ensure that the `AeroEdge` handles model downloads efficiently, even in the background.
