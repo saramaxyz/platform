@@ -20,7 +20,7 @@ public class ModelDownloader: NSObject, ModelDownloaderUseCase {
     self.modelStore = modelStore
     super.init()
     
-    let backgroundSessionConfiguration = URLSessionConfiguration.background(withIdentifier: MLModelManager.backgroundIdentifier)
+    let backgroundSessionConfiguration = URLSessionConfiguration.background(withIdentifier: AeroEdge.backgroundIdentifier)
     self.backgroundSession = URLSession(configuration: backgroundSessionConfiguration, delegate: self, delegateQueue: nil)
   }
   

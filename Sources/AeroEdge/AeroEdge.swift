@@ -1,5 +1,5 @@
 //
-//  MLModelManager.swift
+//  AeroEdge.swift
 //
 //
 //  Created by Egzon Arifi on 19/09/2023.
@@ -7,7 +7,7 @@
 
 import CoreML
 
-public class MLModelManager: NSObject {
+public class AeroEdge: NSObject {
   public static let backgroundIdentifier = "com.app.backgroundModelDownload"
   private let modelChecker: ModelCheckerUseCase
   private let modelCompiler: ModelCompilerUseCase
@@ -16,12 +16,12 @@ public class MLModelManager: NSObject {
   private let modelServer: ModelServer
   public var backgroundSessionCompletionHandler: (() -> Void)?
   private var downloadProgressClosures: [String: (Float) -> Void] = [:]
-
+  
   init(modelChecker: ModelCheckerUseCase,
-              modelCompiler: ModelCompilerUseCase,
-              modelDownloader: ModelDownloaderUseCase,
-              localModelStore: ModelStorable,
-              modelServer: ModelServer) {
+       modelCompiler: ModelCompilerUseCase,
+       modelDownloader: ModelDownloaderUseCase,
+       localModelStore: ModelStorable,
+       modelServer: ModelServer) {
     self.modelChecker = modelChecker
     self.modelCompiler = modelCompiler
     self.modelDownloader = modelDownloader
@@ -78,7 +78,7 @@ public class MLModelManager: NSObject {
   }
 }
 
-private extension MLModelManager {
+private extension AeroEdge {
   func loadLocalModel(modelName: String, version: Int) async throws -> MLModel {
     // Get the URL of the local model using the `ModelLocalStore` instance
     guard let modelURL = localModelStore.getLocalModelURL(for: modelName, version: version) else {
@@ -135,7 +135,7 @@ private extension MLModelManager {
   }
 }
 
-extension MLModelManager: ModelDownloadDelegate {
+extension AeroEdge: ModelDownloadDelegate {
   public func modelDownloadProgress(forModel modelName: String, progress: Float) {
     downloadProgressClosures[modelName]?(progress)
   }
@@ -143,5 +143,5 @@ extension MLModelManager: ModelDownloadDelegate {
   public func handleAllTasksCompleted() {
     backgroundSessionCompletionHandler?()
     backgroundSessionCompletionHandler = nil
-}
+  }
 }

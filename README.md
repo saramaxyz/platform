@@ -1,8 +1,8 @@
-# MLModelManager SDK for iOS
+# AeroEdge SDK for iOS
 
 ## Overview
 
-`MLModelManager` is an iOS SDK designed to streamline the process of fetching, managing, and compiling machine learning models. It offers seamless integration with your iOS apps, ensuring you can efficiently check local models, download new versions, and compile them for use.
+`AeroEdge` is an iOS SDK designed to streamline the process of fetching, managing, and compiling machine learning models. It offers seamless integration with your iOS apps, ensuring you can efficiently check local models, download new versions, and compile them for use.
 
 Features:
 
@@ -29,12 +29,12 @@ let package = Package(
     ...
     dependencies: [
         ...
-        .package(name: "MLModelManager", url: "https://github.com/saramaxyz/MLModelManager.git", branch: "main"), // Add the package
+        .package(name: "AeroEdge", url: "https://github.com/saramaxyz/AeroEdge.git", branch: "main"), // Add the package
     ],
     targets: [
         .target(
             name: "YourTargetName",
-            dependencies: ["MLModelManager"] // Add as a dependency
+            dependencies: ["AeroEdge"] // Add as a dependency
         )
     ]
 )
@@ -43,20 +43,20 @@ let package = Package(
 Or in Xcode, File > Add Package Dependency and add the url:  
 
 ```url
-https://github.com/saramaxyz/MLModelManager.git
+https://github.com/saramaxyz/AeroEdge.git
 ```
 
 ## Usage
 
 ### Initialization:
 
-To start using `MLModelManager`, you'll first need to initialize it using your `apiKey`. Here's how you can do it:
+To start using `AeroEdge`, you'll first need to initialize it using your `apiKey`. Here's how you can do it:
 
 ```swift
-import MLModelManager
+import AeroEdge
 
 let apiKey = "YOUR_API_KEY_HERE"
-let modelManager = MLModelManager.make(apiKey: apiKey)
+let modelManager = AeroEdge.make(apiKey: apiKey)
 ```
 
 ### Fetching a Model:
@@ -82,7 +82,7 @@ Replace `"YourModelName"` with the name of the model you wish to fetch.
 
 ### Background Support
 
-`MLModelManager` SDK supports background downloads, ensuring that the download of ML models continues even if your app goes to the background. Here's how to set it up:
+`AeroEdge` SDK supports background downloads, ensuring that the download of ML models continues even if your app goes to the background. Here's how to set it up:
 
 #### Enable Background Modes Capability:
 
@@ -93,14 +93,14 @@ Replace `"YourModelName"` with the name of the model you wish to fetch.
 
 #### AppDelegate Setup:
 
-If you're using `UIKit`, ensure the `AppDelegate` integrates with the `MLModelManager`:
+If you're using `UIKit`, ensure the `AppDelegate` integrates with the `AeroEdge`:
 
 ```swift
 import UIKit
-import MLModelManager
+import AeroEdge
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-  let mlModelManager: MLModelManager = .make(apiKey: "your_token_here")
+  let AeroEdge: AeroEdge = .make(apiKey: "your_token_here")
   
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
@@ -108,8 +108,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   }
   
   func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
-    if identifier == MLModelManager.backgroundIdentifier {
-      mlModelManager.backgroundSessionCompletionHandler = completionHandler
+    if identifier == AeroEdge.backgroundIdentifier {
+      AeroEdge.backgroundSessionCompletionHandler = completionHandler
     }
   }
 }
@@ -127,14 +127,14 @@ struct ExampleAppApp: App {
   
   var body: some Scene {
     WindowGroup {
-      ContentView(viewModel: ViewModel(mlModelManager: appDelegate.mlModelManager))
+      ContentView(viewModel: ViewModel(AeroEdge: appDelegate.AeroEdge))
     }
   }
 }
 
 ```
 
-By integrating these steps, you ensure that the `MLModelManager` handles model downloads efficiently, even in the background.
+By integrating these steps, you ensure that the `AeroEdge` handles model downloads efficiently, even in the background.
 
 ## Contributing
 
@@ -146,4 +146,4 @@ For major concerns or assistance, you can reach out to the team directly @[AeroE
 
 ## License
 
-This SDK is under a specific license [MIT Licence](https://github.com/saramaxyz/MLModelManager/blob/develop/LICENSE). All rights reserved.
+This SDK is under a specific license [MIT Licence](https://github.com/saramaxyz/AeroEdge/blob/develop/LICENSE). All rights reserved.
