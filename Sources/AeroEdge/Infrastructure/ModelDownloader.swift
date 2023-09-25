@@ -20,7 +20,7 @@ public class ModelDownloader: NSObject, ModelDownloaderUseCase {
     self.modelStore = modelStore
     super.init()
     
-    let backgroundSessionConfiguration = URLSessionConfiguration.background(withIdentifier: "com.app.backgroundModelDownload")
+    let backgroundSessionConfiguration = URLSessionConfiguration.background(withIdentifier: AeroEdge.backgroundIdentifier)
     self.backgroundSession = URLSession(configuration: backgroundSessionConfiguration, delegate: self, delegateQueue: nil)
   }
   
@@ -70,14 +70,14 @@ extension ModelDownloader: URLSessionDownloadDelegate {
       print("Error detail: \(error.localizedDescription)")
       completionHandler(.failure(error))
     }
+    
+    handleAllTasksCompletedIfNeeded(session)
   }
-
   
   public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
     // Update downloadProgress dictionary to track progress
     let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
     downloadProgress[downloadTask] = progress
-    // delegate?.modelDownloadDidProgress(self, taskId: downloadTask.taskIdentifier, progress: progress)
     
     guard let modelName = downloadTask.originalRequest?.url?.lastPathComponent else {
       return
@@ -90,10 +90,20 @@ extension ModelDownloader: URLSessionDownloadDelegate {
     if let error = error, let completionHandler = downloadCompletionHandlers[task] {
       completionHandler(.failure(error))
     }
+    
+    handleAllTasksCompletedIfNeeded(session)
   }
 }
 
 private extension ModelDownloader {
+  func handleAllTasksCompletedIfNeeded(_ session: URLSession) {
+    session.getAllTasks { tasks in
+      if tasks.isEmpty {
+        self.delegate?.handleAllTasksCompleted()
+      }
+    }
+  }
+  
   func getModel(by id: String) -> ModelEntity? {
     guard let name = id.components(separatedBy: ".").first else { return nil }
     return modelDataSource[name]

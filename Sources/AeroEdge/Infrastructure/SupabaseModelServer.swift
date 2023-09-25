@@ -16,7 +16,7 @@ public class SupabaseModelServer: ModelServer {
     self.apiKey = apiKey
   }
   
-  public func fetchRemoteModelVersion(for modelName: String) async throws -> Int {
+  public func fetchRemoteModelInfo(for modelName: String) async throws -> ModelEntity {
     let url = URL(string: "\(baseURL)/rest/v1/ml_models_metadata?name=eq.\(modelName)&select=*")!
     
     var request = URLRequest(url: url)
@@ -30,20 +30,19 @@ public class SupabaseModelServer: ModelServer {
       throw ModelError.networkError
     }
     
-    if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]],
-       let firstRecord = json.first,
-       let version = firstRecord["version"] as? Int {
-      return version
-    } else {
+    guard let apiResponse = try? JSONDecoder().decode([SupabaseResponse].self, from: data),
+            let entityResponse = apiResponse.first,
+          let fileUrl = URL(string: "\(baseURL)/storage/v1/object/public/public/\(entityResponse.file_path)")  else {
       throw ModelError.failedToLoadModel("Failed to parse response")
     }
+    
+    return ModelEntity(name: entityResponse.name, version: entityResponse.version, url: fileUrl)
   }
   
-  public func fetchRemoteModelFile(for modelName: String, version: Int) async throws -> URL {
-    let fileURLString = "\(baseURL)/storage/v1/object/public/public/models/\(modelName)_\(version).mlmodel"
-    guard let fileURL = URL(string: fileURLString) else {
-      throw ModelError.failedToLoadModel("Invalid URL")
-    }
-    return fileURL
+  struct SupabaseResponse: Decodable {
+    let id: String
+    let name: String
+    let file_path: String
+    let version: Int
   }
 }

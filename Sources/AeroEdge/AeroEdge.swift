@@ -1,5 +1,5 @@
 //
-//  MLModelManager.swift
+//  AeroEdge.swift
 //
 //
 //  Created by Egzon Arifi on 19/09/2023.
@@ -7,19 +7,21 @@
 
 import CoreML
 
-public class MLModelManager {
+public class AeroEdge: NSObject {
+  public static let backgroundIdentifier = "com.app.backgroundModelDownload"
   private let modelChecker: ModelCheckerUseCase
   private let modelCompiler: ModelCompilerUseCase
-  private var modelDownloader: ModelDownloaderUseCase
+  internal var modelDownloader: ModelDownloaderUseCase
   private let localModelStore: ModelStorable
   private let modelServer: ModelServer
+  public var backgroundSessionCompletionHandler: (() -> Void)?
   private var downloadProgressClosures: [String: (Float) -> Void] = [:]
   
   init(modelChecker: ModelCheckerUseCase,
-              modelCompiler: ModelCompilerUseCase,
-              modelDownloader: ModelDownloaderUseCase,
-              localModelStore: ModelStorable,
-              modelServer: ModelServer) {
+       modelCompiler: ModelCompilerUseCase,
+       modelDownloader: ModelDownloaderUseCase,
+       localModelStore: ModelStorable,
+       modelServer: ModelServer) {
     self.modelChecker = modelChecker
     self.modelCompiler = modelCompiler
     self.modelDownloader = modelDownloader
@@ -35,7 +37,8 @@ public class MLModelManager {
   ) async {
     do {
       // Step 1: Fetch remote model version
-      let remoteVersion = try await modelServer.fetchRemoteModelVersion(for: modelName)
+      let modelInfo = try await modelServer.fetchRemoteModelInfo(for: modelName)
+      let remoteVersion = modelInfo.version
       
       // Step 2: Check local model version
       if modelChecker.checkLocalModelVersion(modelName: modelName, remoteVersion: remoteVersion),
@@ -54,7 +57,10 @@ public class MLModelManager {
           self.downloadProgressClosures["\(modelName)_\(remoteVersion).mlmodel"] = progressClosure
         }
         do {
-          let newModel = try await self.downloadAndLoadModel(modelName: modelName, remoteVersion: remoteVersion, bundledModelURL: bundledModelURL)
+          let newModel = try await self.downloadAndLoadModel(modelName: modelName,
+                                                             remoteVersion: remoteVersion,
+                                                             remoteModelURL: modelInfo.url,
+                                                             bundledModelURL: bundledModelURL)
           completion(.success(newModel), true) // true indicates that this is the final model
         } catch {
           completion(.failure(error), true) // true indicates that this is the final callback
@@ -72,7 +78,7 @@ public class MLModelManager {
   }
 }
 
-private extension MLModelManager {
+private extension AeroEdge {
   func loadLocalModel(modelName: String, version: Int) async throws -> MLModel {
     // Get the URL of the local model using the `ModelLocalStore` instance
     guard let modelURL = localModelStore.getLocalModelURL(for: modelName, version: version) else {
@@ -90,11 +96,8 @@ private extension MLModelManager {
     }
   }
   
-  func downloadAndLoadModel(modelName: String, remoteVersion: Int, bundledModelURL: URL?) async throws -> MLModel {
+  func downloadAndLoadModel(modelName: String, remoteVersion: Int, remoteModelURL: URL, bundledModelURL: URL?) async throws -> MLModel {
     do {
-      // Get the URL for the remote version of the model from the server
-      let remoteModelURL = try await modelServer.fetchRemoteModelFile(for: modelName, version: remoteVersion)
-      
       // Create a ModelEntity instance to represent the model
       let modelEntity = ModelEntity(name: modelName, version: remoteVersion, url: remoteModelURL)
       
@@ -132,8 +135,13 @@ private extension MLModelManager {
   }
 }
 
-extension MLModelManager: ModelDownloadDelegate {
+extension AeroEdge: ModelDownloadDelegate {
   public func modelDownloadProgress(forModel modelName: String, progress: Float) {
     downloadProgressClosures[modelName]?(progress)
+  }
+  
+  public func handleAllTasksCompleted() {
+    backgroundSessionCompletionHandler?()
+    backgroundSessionCompletionHandler = nil
   }
 }

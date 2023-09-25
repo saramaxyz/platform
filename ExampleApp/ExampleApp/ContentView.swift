@@ -8,30 +8,30 @@
 import SwiftUI
 
 struct ContentView: View {
-  @ObservedObject private var viewModel: ViewModel = .init()
+  @ObservedObject private var viewModel: ViewModel
   
-    var body: some View {
-      VStack {
-        Image(systemName: "globe")
-          .imageScale(.large)
-          .foregroundStyle(.tint)
-        Text("Hello, world!")
-        if let description = viewModel.modelDescription {
-          Text(description)
-        }
-        if let progress = viewModel.downloadProgress {
-          ProgressView("Downloading", value: progress, total: 1.0)
-        } else {
-          Text("The Model is ready!").fontWeight(.bold)
-        }
+  init(viewModel: ViewModel) {
+    self.viewModel = viewModel
+  }
+  
+  var body: some View {
+    VStack {
+      Image(systemName: "globe")
+        .imageScale(.large)
+        .foregroundStyle(.tint)
+      Text("Hello, world!")
+      if let description = viewModel.modelDescription {
+        Text(description)
       }
-        .padding()
-        .task {
-          await viewModel.getYoloModel()
-        }
+      if let progress = viewModel.downloadProgress {
+        ProgressView("Downloading", value: progress, total: 1.0)
+      } else {
+        Text("The Model is ready!").fontWeight(.bold)
+      }
     }
-}
-
-#Preview {
-    ContentView()
+    .padding()
+    .task {
+      await viewModel.getYoloModel()
+    }
+  }
 }
