@@ -6,20 +6,20 @@
 //
 
 import Foundation
-import MLModelManager
+import AeroEdge
 
 class ViewModel: ObservableObject {
-  private let mlModelManager: MLModelManager
+  private let aeroEdge: AeroEdge
   @Published var modelDescription: String?
   @Published var downloadProgress: Float?
   
-  init(mlModelManager: MLModelManager) {
-    self.mlModelManager = mlModelManager
+  init(aeroEdge: AeroEdge) {
+    self.aeroEdge = aeroEdge
   }
   
   func getYoloModel() async {
-    await mlModelManager.getModel(modelName: MLModelInfo.yolo.name,
-                                  bundledModelURL: MLModelInfo.yolo.bundledURL) { progress in
+    await aeroEdge.getModel(modelName: MLModelInfo.yolo.name,
+                            bundledModelURL: MLModelInfo.yolo.bundledURL) { progress in
       print("Yolo Progress: \(progress)")
       self.downloadProgress = progress
     } completion: { result, isFinal in

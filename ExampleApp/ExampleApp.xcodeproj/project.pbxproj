@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		774AAC8B2ABB281900593391 /* MLModelManager in Frameworks */ = {isa = PBXBuildFile; productRef = 774AAC8A2ABB281900593391 /* MLModelManager */; };
 		774AAC8D2ABB283B00593391 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 774AAC8C2ABB283B00593391 /* ViewModel.swift */; };
 		775D3CD82ABC367A00690B59 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 775D3CD72ABC367A00690B59 /* Constants.swift */; };
 		775D3CDA2ABC6ED200690B59 /* YOLOv3Int8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 775D3CD92ABC6ED200690B59 /* YOLOv3Int8LUT.mlmodel */; };
 		777209352ABDC0C70075561D /* MLModelInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777209342ABDC0C70075561D /* MLModelInfo.swift */; };
 		77A2E3422ABDCD3500717A0A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A2E3412ABDCD3500717A0A /* AppDelegate.swift */; };
+		77CB42712AC189F20029A8D3 /* AeroEdge in Frameworks */ = {isa = PBXBuildFile; productRef = 77CB42702AC189F20029A8D3 /* AeroEdge */; };
 		77E009892ABB27D9006B2508 /* ExampleAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77E009882ABB27D9006B2508 /* ExampleAppApp.swift */; };
 		77E0098B2ABB27D9006B2508 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77E0098A2ABB27D9006B2508 /* ContentView.swift */; };
 		77E0098D2ABB27DC006B2508 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77E0098C2ABB27DC006B2508 /* Assets.xcassets */; };
@@ -38,7 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				774AAC8B2ABB281900593391 /* MLModelManager in Frameworks */,
+				77CB42712AC189F20029A8D3 /* AeroEdge in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,7 +111,7 @@
 			);
 			name = ExampleApp;
 			packageProductDependencies = (
-				774AAC8A2ABB281900593391 /* MLModelManager */,
+				77CB42702AC189F20029A8D3 /* AeroEdge */,
 			);
 			productName = ExampleApp;
 			productReference = 77E009852ABB27D9006B2508 /* ExampleApp.app */;
@@ -141,7 +141,7 @@
 			);
 			mainGroup = 77E0097C2ABB27D9006B2508;
 			packageReferences = (
-				774AAC892ABB281900593391 /* XCLocalSwiftPackageReference ".." */,
+				77CB426F2AC189F20029A8D3 /* XCLocalSwiftPackageReference ".." */,
 			);
 			productRefGroup = 77E009862ABB27D9006B2508 /* Products */;
 			projectDirPath = "";
@@ -383,16 +383,16 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		774AAC892ABB281900593391 /* XCLocalSwiftPackageReference ".." */ = {
+		77CB426F2AC189F20029A8D3 /* XCLocalSwiftPackageReference ".." */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ..;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		774AAC8A2ABB281900593391 /* MLModelManager */ = {
+		77CB42702AC189F20029A8D3 /* AeroEdge */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = MLModelManager;
+			productName = AeroEdge;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -6,10 +6,10 @@
 //
 
 import UIKit
-import MLModelManager
+import AeroEdge
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-  let mlModelManager: MLModelManager = .make(apiKey: "your_token_here")
+  let aeroEdge: AeroEdge = .make(apiKey: "your_token_here")
   
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
@@ -17,8 +17,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   }
   
   func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
-    if identifier == MLModelManager.backgroundIdentifier {
-      mlModelManager.backgroundSessionCompletionHandler = completionHandler
+    if identifier == AeroEdge.backgroundIdentifier {
+      aeroEdge.backgroundSessionCompletionHandler = completionHandler
     }
   }
 }

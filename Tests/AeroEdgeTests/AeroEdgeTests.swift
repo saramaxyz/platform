@@ -1,7 +1,7 @@
 import XCTest
-@testable import MLModelManager
+@testable import AeroEdge
 
-final class MLModelManagerTests: XCTestCase {
+final class AeroEdgeTests: XCTestCase {
     func testExample() throws {
         // XCTest Documentation
         // https://developer.apple.com/documentation/xctest

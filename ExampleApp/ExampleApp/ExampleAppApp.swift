@@ -13,7 +13,7 @@ struct ExampleAppApp: App {
   
   var body: some Scene {
     WindowGroup {
-      ContentView(viewModel: ViewModel(mlModelManager: appDelegate.mlModelManager))
+      ContentView(viewModel: ViewModel(aeroEdge: appDelegate.aeroEdge))
     }
   }
 }
