@@ -109,7 +109,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
   func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
     if identifier == AeroEdge.backgroundIdentifier {
-      AeroEdge.backgroundSessionCompletionHandler = completionHandler
+      aeroEdge.backgroundSessionCompletionHandler = completionHandler
     }
   }
 }
@@ -126,7 +126,7 @@ struct ExampleAppApp: App {
 
   var body: some Scene {
     WindowGroup {
-      ContentView(viewModel: ViewModel(AeroEdge: appDelegate.AeroEdge))
+      ContentView(viewModel: ViewModel(aeroEdge: appDelegate.AeroEdge))
     }
   }
 }
