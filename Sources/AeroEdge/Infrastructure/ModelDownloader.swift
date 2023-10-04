@@ -48,7 +48,9 @@ extension ModelDownloader: URLSessionDownloadDelegate {
     }
     
     do {
-      let destinationURL = modelStore.getLocalModelURL(for: model.name, version: model.version) ?? createDestinationURL(for: model)
+      let destinationURL = modelStore.getLocalModelURL(for: model.name,
+                                                       version: model.version,
+                                                       fileExtension: model.fileExtension) ?? createDestinationURL(for: model)
       
       // Check if directory exists, if not create it
       let directoryURL = destinationURL.deletingLastPathComponent()
@@ -111,7 +113,7 @@ private extension ModelDownloader {
   
   func createDestinationURL(for model: ModelEntity) -> URL {
     let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    return documentsDirectory.appendingPathComponent(model.versionedName + ".mlmodel")
+    return documentsDirectory.appendingPathComponent(model.versionedNameWithExtensionZipped)
   }
   
   func deleteOldVersions(of model: ModelEntity) {

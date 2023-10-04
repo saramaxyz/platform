@@ -19,6 +19,7 @@ class ViewModel: ObservableObject {
   
   func getYoloModel() async {
     await aeroEdge.getModel(modelName: MLModelInfo.yolo.name,
+                            modelType: MLModelInfo.yolo.modelType,
                             bundledModelURL: MLModelInfo.yolo.bundledURL) { progress in
       print("Yolo Progress: \(progress)")
       self.downloadProgress = progress
@@ -31,10 +32,14 @@ class ViewModel: ObservableObject {
       switch result {
       case .success(let model):
         print(model.modelDescription)
-        self.modelDescription = model.description
+        DispatchQueue.main.async {
+          self.modelDescription = model.description
+        }
       case .failure(let error):
         print(error.localizedDescription)
-        self.modelDescription = error.localizedDescription
+        DispatchQueue.main.async {
+          self.modelDescription = error.localizedDescription
+        }
       }
     }
   }

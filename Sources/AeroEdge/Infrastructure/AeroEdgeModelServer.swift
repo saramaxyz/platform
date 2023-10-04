@@ -31,13 +31,19 @@ public class AeroEdgeModelServer: ModelServer {
     guard let apiResponse = try? JSONDecoder().decode(ModelInfo.self, from: data) else {
       throw ModelError.failedToLoadModel("Failed to parse response")
     }
-    
-    return ModelEntity(name: apiResponse.name, version: apiResponse.version, url: apiResponse.signed_url)
+    return ModelEntity(name: apiResponse.name,
+                       version: apiResponse.version,
+                       url: apiResponse.signed_url,
+                       fileExtension: apiResponse.fileExtension)
   }
   
   struct ModelInfo: Decodable {
     let name: String
     let signed_url: URL
     let version: Int
+    
+    var fileExtension: String {
+      signed_url.lastPathComponent.split(separator: ".").dropFirst().joined(separator: ".")
+    }
   }
 }

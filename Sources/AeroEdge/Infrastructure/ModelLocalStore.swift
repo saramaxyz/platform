@@ -14,7 +14,8 @@ public class ModelLocalStore: ModelStorable {
     self.fileManager = fileManager
   }
   
-  public func getLocalModelVersion(for modelName: String) -> Int? {
+  public func getLocalModelVersion(for modelName: String,
+                                   fileExtension: String = "mlmodel") -> Int? {
     let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
     
     do {
@@ -27,7 +28,7 @@ public class ModelLocalStore: ModelStorable {
       let versions = modelFiles.compactMap { url -> Int? in
         let fileName = url.lastPathComponent
         guard let startRange = fileName.range(of: "\(modelName)_"),
-              let endRange = fileName.range(of: ".mlmodel") else { return nil }
+              let endRange = fileName.range(of: ".\(fileExtension)") else { return nil }
         
         // Extract the version number using the range between the modelName_ and .mlmodel
         let versionString = fileName[startRange.upperBound..<endRange.lowerBound]
@@ -43,8 +44,8 @@ public class ModelLocalStore: ModelStorable {
     }
   }
 
-  public func getLocalModelURL(for modelName: String, version: Int) -> URL? {
-    let modelNameWithVersion = "\(modelName)_\(version).mlmodel"
+  public func getLocalModelURL(for modelName: String, version: Int, fileExtension: String) -> URL? {
+    let modelNameWithVersion = "\(modelName)_\(version).\(fileExtension)"
     let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
     let fileURL = documentsDirectory.appendingPathComponent(modelNameWithVersion)
     
@@ -53,7 +54,7 @@ public class ModelLocalStore: ModelStorable {
   
   public func saveLocalModel(_ model: ModelEntity, url: URL) {
     let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-    let destinationURL = documentsDirectory.appendingPathComponent(model.versionedName + ".mlmodel")
+    let destinationURL = documentsDirectory.appendingPathComponent(model.versionedNameWithExtensionZipped)
     
     do {
       if fileManager.fileExists(atPath: destinationURL.path) {
