@@ -32,7 +32,7 @@ public class AeroEdge: NSObject {
   
   public func getModel(
     modelName: String,
-    fileExtension: String = "mlmodel",
+    modelType: ModelType = .mlModel,
     bundledModelURL: URL?,
     progress: ((Float) -> Void)?,
     completion: @escaping (Result<MLModel, Error>, Bool) -> Void
@@ -45,11 +45,11 @@ public class AeroEdge: NSObject {
       // Step 2: Check local model version
       if modelChecker.checkLocalModelVersion(modelName: modelName,
                                              remoteVersion: remoteVersion,
-                                             fileExtension: fileExtension),
+                                             fileExtension: modelType.rawValue),
          let localVersion = self.localModelStore.getLocalModelVersion(for: modelName,
-                                                                      fileExtension: fileExtension) {
+                                                                      fileExtension: modelType.rawValue) {
         // Load local model and return
-        let localModel = try await self.loadLocalModel(modelName: modelName, version: localVersion, fileExtension: fileExtension)
+        let localModel = try await self.loadLocalModel(modelName: modelName, version: localVersion, fileExtension: modelType.rawValue)
         completion(.success(localModel), true) // true indicates that this is the final model and no newer version is available
       } else {
         // Step 3: If there's a local version, return it first
@@ -59,11 +59,11 @@ public class AeroEdge: NSObject {
         
         // Now download the newer version from the server
         if let progressClosure = progress {
-          self.downloadProgressClosures["\(modelName)_\(remoteVersion).\(fileExtension)"] = progressClosure
+          self.downloadProgressClosures["\(modelName)_\(remoteVersion).\(modelType.rawValue)"] = progressClosure
         }
         do {
           let newModel = try await self.downloadAndLoadModel(modelName: modelName,
-                                                             fileExtension: fileExtension,
+                                                             fileExtension: modelType.rawValue,
                                                              remoteVersion: remoteVersion,
                                                              remoteModelURL: modelInfo.url,
                                                              bundledModelURL: bundledModelURL)
@@ -77,7 +77,7 @@ public class AeroEdge: NSObject {
       do {
         let fallbackModel = try await loadLocalOrBundledModel(modelName: modelName,
                                                               bundledModelURL: bundledModelURL,
-                                                              fileExtension: fileExtension)
+                                                              fileExtension: modelType.rawValue)
         completion(.success(fallbackModel), true) // true indicates that this is the final model
       } catch {
         completion(.failure(error), true) // true indicates that this is the final callback

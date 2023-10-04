@@ -19,7 +19,7 @@ class ViewModel: ObservableObject {
   
   func getYoloModel() async {
     await aeroEdge.getModel(modelName: MLModelInfo.yolo.name,
-                            fileExtension: MLModelInfo.yolo.modelType.rawValue,
+                            modelType: MLModelInfo.yolo.modelType,
                             bundledModelURL: MLModelInfo.yolo.bundledURL) { progress in
       print("Yolo Progress: \(progress)")
       self.downloadProgress = progress
