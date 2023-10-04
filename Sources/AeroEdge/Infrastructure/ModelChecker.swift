@@ -14,9 +14,11 @@ class ModelChecker: ModelCheckerUseCase {
     self.localModelStore = localModelStore
   }
   
-  func checkLocalModelVersion(modelName: String, remoteVersion: Int) -> Bool {
+  func checkLocalModelVersion(modelName: String,
+                              remoteVersion: Int,
+                              fileExtension: String = "mlmodel") -> Bool {
     // Get the version of the local model
-    if let localVersion = localModelStore.getLocalModelVersion(for: modelName) {
+    if let localVersion = localModelStore.getLocalModelVersion(for: modelName, fileExtension: fileExtension) {
       return localVersion >= remoteVersion
     }
     

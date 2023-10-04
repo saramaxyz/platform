@@ -6,6 +6,7 @@
 //
 
 import CoreML
+import ZIPFoundation
 
 public class AeroEdge: NSObject {
   public static let backgroundIdentifier = "com.app.backgroundModelDownload"
@@ -31,6 +32,7 @@ public class AeroEdge: NSObject {
   
   public func getModel(
     modelName: String,
+    fileExtension: String = "mlmodel",
     bundledModelURL: URL?,
     progress: ((Float) -> Void)?,
     completion: @escaping (Result<MLModel, Error>, Bool) -> Void
@@ -41,10 +43,13 @@ public class AeroEdge: NSObject {
       let remoteVersion = modelInfo.version
       
       // Step 2: Check local model version
-      if modelChecker.checkLocalModelVersion(modelName: modelName, remoteVersion: remoteVersion),
-         let localVersion = self.localModelStore.getLocalModelVersion(for: modelName) {
+      if modelChecker.checkLocalModelVersion(modelName: modelName,
+                                             remoteVersion: remoteVersion,
+                                             fileExtension: fileExtension),
+         let localVersion = self.localModelStore.getLocalModelVersion(for: modelName,
+                                                                      fileExtension: fileExtension) {
         // Load local model and return
-        let localModel = try await self.loadLocalModel(modelName: modelName, version: localVersion)
+        let localModel = try await self.loadLocalModel(modelName: modelName, version: localVersion, fileExtension: fileExtension)
         completion(.success(localModel), true) // true indicates that this is the final model and no newer version is available
       } else {
         // Step 3: If there's a local version, return it first
@@ -54,10 +59,11 @@ public class AeroEdge: NSObject {
         
         // Now download the newer version from the server
         if let progressClosure = progress {
-          self.downloadProgressClosures["\(modelName)_\(remoteVersion).mlmodel"] = progressClosure
+          self.downloadProgressClosures["\(modelName)_\(remoteVersion).\(fileExtension)"] = progressClosure
         }
         do {
           let newModel = try await self.downloadAndLoadModel(modelName: modelName,
+                                                             fileExtension: fileExtension,
                                                              remoteVersion: remoteVersion,
                                                              remoteModelURL: modelInfo.url,
                                                              bundledModelURL: bundledModelURL)
@@ -69,7 +75,9 @@ public class AeroEdge: NSObject {
     } catch {
       // Handle error - try loading local or bundled version if available
       do {
-        let fallbackModel = try await loadLocalOrBundledModel(modelName: modelName, bundledModelURL: bundledModelURL)
+        let fallbackModel = try await loadLocalOrBundledModel(modelName: modelName,
+                                                              bundledModelURL: bundledModelURL,
+                                                              fileExtension: fileExtension)
         completion(.success(fallbackModel), true) // true indicates that this is the final model
       } catch {
         completion(.failure(error), true) // true indicates that this is the final callback
@@ -79,15 +87,20 @@ public class AeroEdge: NSObject {
 }
 
 private extension AeroEdge {
-  func loadLocalModel(modelName: String, version: Int) async throws -> MLModel {
+  func loadLocalModel(modelName: String, version: Int, fileExtension: String = "mlmodel") async throws -> MLModel {
     // Get the URL of the local model using the `ModelLocalStore` instance
-    guard let modelURL = localModelStore.getLocalModelURL(for: modelName, version: version) else {
+    guard let modelURL = localModelStore.getLocalModelURL(for: modelName,
+                                                          version: version,
+                                                          fileExtension: fileExtension) else {
       throw ModelError.modelNotFound
     }
     
     // Try to load the MLModel from the obtained URL
     do {
-      let modelEntity = ModelEntity(name: modelName, version: version, url: modelURL)
+      let modelEntity = ModelEntity(name: modelName,
+                                    version: version,
+                                    url: modelURL,
+                                    fileExtension: fileExtension)
       let model = try await modelCompiler.compileModel(model: modelEntity, from: modelURL)
       return model
     } catch {
@@ -96,16 +109,30 @@ private extension AeroEdge {
     }
   }
   
-  func downloadAndLoadModel(modelName: String, remoteVersion: Int, remoteModelURL: URL, bundledModelURL: URL?) async throws -> MLModel {
+  func downloadAndLoadModel(modelName: String,
+                            fileExtension: String = "mlmodel",
+                            remoteVersion: Int,
+                            remoteModelURL: URL,
+                            bundledModelURL: URL?) async throws -> MLModel {
     do {
       // Create a ModelEntity instance to represent the model
-      let modelEntity = ModelEntity(name: modelName, version: remoteVersion, url: remoteModelURL)
+      let modelEntity = ModelEntity(name: modelName,
+                                    version: remoteVersion,
+                                    url: remoteModelURL,
+                                    fileExtension: fileExtension)
       
       // Download the model using the ModelDownloader
       let downloadURL = try await modelDownloader.downloadModelAsync(modelEntity)
       
+      // TODO: HANDLE UNZIP HERE FIRST
+      try FileManager.default.unzipItem(at: downloadURL, to: downloadURL.deletingLastPathComponent())
+      
+      // TODO: Delete zip file
+      try FileManager.default.removeItem(at: downloadURL)
+      
       // Load the newly downloaded model into memory
-      let mlModel = try await modelCompiler.compileModel(model: modelEntity, from: downloadURL)
+      let mlModel = try await modelCompiler.compileModel(model: modelEntity,
+                                                         from: downloadURL.deletingPathExtension())
       
       return mlModel
     } catch {
@@ -120,8 +147,11 @@ private extension AeroEdge {
     }
   }
   
-  func loadLocalOrBundledModel(modelName: String, bundledModelURL: URL?) async throws -> MLModel {
-    if let latestLocalVersion = self.localModelStore.getLocalModelVersion(for: modelName) {
+  func loadLocalOrBundledModel(modelName: String,
+                               bundledModelURL: URL?,
+                               fileExtension: String = "mlmodel") async throws -> MLModel {
+    if let latestLocalVersion = self.localModelStore.getLocalModelVersion(for: modelName,
+                                                                          fileExtension: fileExtension) {
       // If a local version is available, load it
       return try await self.loadLocalModel(modelName: modelName, version: latestLocalVersion)
     } else if let bundledModelURL = bundledModelURL {

@@ -21,7 +21,7 @@ class ModelCompiler: ModelCompilerUseCase {
                                                              in: .userDomainMask,
                                                              appropriateFor: nil,
                                                              create: true)
-    let compiledModelURL = applicationSupportDirectoryURL.appendingPathComponent("\(model.versionedName).mlmodelc")
+    let compiledModelURL = applicationSupportDirectoryURL.appendingPathComponent("\(model.versionedNameWithExtension)")
     
     // Check if the compiled model already exists, if yes, then return it
     if fileManager.fileExists(atPath: compiledModelURL.path) {

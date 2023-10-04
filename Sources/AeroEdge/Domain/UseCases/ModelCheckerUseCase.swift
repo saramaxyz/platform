@@ -8,5 +8,7 @@
 import Foundation
 
 protocol ModelCheckerUseCase {
-  func checkLocalModelVersion(modelName: String, remoteVersion: Int) -> Bool
+  func checkLocalModelVersion(modelName: String,
+                              remoteVersion: Int,
+                              fileExtension: String) -> Bool
 }
