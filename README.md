@@ -29,7 +29,7 @@ let package = Package(
     ...
     dependencies: [
         ...
-        .package(name: "AeroEdge", url: "https://github.com/saramaxyz/platform.git", branch: "main"), // Add the package
+        .package(name: "Sarama Platform", url: "https://github.com/saramaxyz/platform.git", branch: "main"), // Add the package
     ],
     targets: [
         .target(
