@@ -1,4 +1,4 @@
-# AeroEdge SDK for iOS
+# Sarama Platform SDK for iOS
 
 ## Overview
 
