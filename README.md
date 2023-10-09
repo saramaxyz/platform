@@ -34,7 +34,7 @@ let package = Package(
     targets: [
         .target(
             name: "YourTargetName",
-            dependencies: ["AeroEdge"] // Add as a dependency
+            dependencies: ["Sarama Platform"] // Add as a dependency
         )
     ]
 )
