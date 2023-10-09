@@ -29,12 +29,12 @@ let package = Package(
     ...
     dependencies: [
         ...
-        .package(name: "Sarama Platform", url: "https://github.com/saramaxyz/platform.git", branch: "main"), // Add the package
+        .package(name: "AeroEdge", url: "https://github.com/saramaxyz/platform.git", branch: "main"), // Add the package
     ],
     targets: [
         .target(
             name: "YourTargetName",
-            dependencies: ["Sarama Platform"] // Add as a dependency
+            dependencies: ["AeroEdge"] // Add as a dependency
         )
     ]
 )
@@ -43,7 +43,7 @@ let package = Package(
 Or in Xcode, File > Add Package Dependency and add the url:  
 
 ```url
-https://github.com/saramaxyz/AeroEdge.git
+https://github.com/saramaxyz/platform.git
 ```
 
 ## Usage
