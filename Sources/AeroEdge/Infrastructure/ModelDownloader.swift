@@ -81,7 +81,7 @@ extension ModelDownloader: URLSessionDownloadDelegate {
     let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
     downloadProgress[downloadTask] = progress
     
-    guard let modelName = downloadTask.originalRequest?.url?.lastPathComponent else {
+    guard let modelName = downloadTask.originalRequest?.url?.lastPathComponent.replacingOccurrences(of: ".zip", with: "") else {
       return
     }
     delegate?.modelDownloadProgress(forModel: modelName, progress: progress)
