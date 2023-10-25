@@ -10,4 +10,5 @@ import Foundation
 public enum ModelType: String, Equatable {
   case mlPackage = "mlpackage"
   case mlModel = "mlmodel"
+  case torch = "ptl"
 }

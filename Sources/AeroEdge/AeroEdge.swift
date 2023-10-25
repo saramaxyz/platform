@@ -29,7 +29,65 @@ public class AeroEdge: NSObject {
     self.localModelStore = localModelStore
     self.modelServer = modelServer
   }
-  
+
+  public func getModelPath(
+    modelName: String,
+    modelType: ModelType = .mlModel,
+    bundledModelURL: URL?,
+    progress: ((Float) -> Void)?,
+    completion: @escaping (Result<ModelEntity, Error>, Bool) -> Void
+  ) async {
+    // use this function to get the path to a model and download it if it is not present locally
+    do {
+      let modelInfo = try await modelServer.fetchRemoteModelInfo(for: modelName)
+      let remoteVersion = modelInfo.version
+      
+      // Step 2: Check local model version
+      if modelChecker.checkLocalModelVersion(modelName: modelName,
+                                             remoteVersion: remoteVersion,
+                                             fileExtension: modelType.rawValue),
+         let localVersion = self.localModelStore.getLocalModelVersion(for: modelName,
+                                                                      fileExtension: modelType.rawValue) {
+        do {
+          let modelEntity = try await getModelEntity(modelName: modelName, version: localVersion, fileExtension: modelType.rawValue)
+          completion(.success(modelEntity), true) // true indicates that this is the final model and no newer version is available
+        } catch {
+          completion(.failure(error), true) // true indicates that this is the final callback
+        }
+      } else {
+        // Step 3: If there's a local version, return it first
+        if let localVersion = self.localModelStore.getLocalModelVersion(for: modelName,
+                                                                        fileExtension: modelType.rawValue) {
+          if let localModelEntity = try? await getModelEntity(modelName: modelName, version: localVersion) {
+            completion(.success(localModelEntity), false) // false indicates that a newer version is being downloaded
+          }
+        }
+        // Now download the newer version from the server
+        if let progressClosure = progress {
+          self.downloadProgressClosures["\(modelName)_\(remoteVersion).\(modelType.rawValue)"] = progressClosure
+        }
+        do {
+          let newModelEntity = try await self.downloadModel(modelName: modelName,
+                                                             fileExtension: modelType.rawValue,
+                                                             remoteVersion: remoteVersion,
+                                                             remoteModelURL: modelInfo.url,
+                                                             bundledModelURL: bundledModelURL)
+          completion(.success(newModelEntity), true) // true indicates that this is the final model
+        } catch {
+          completion(.failure(error), true) // true indicates that this is the final callback
+        }
+      }
+    } catch {
+      // Handle error - try loading local or bundled version if available
+      if let localVersion = self.localModelStore.getLocalModelVersion(for: modelName,
+                                                                      fileExtension: modelType.rawValue),
+         let fallbackModelEntity = try? await getModelEntity(modelName: modelName, version: localVersion) {
+          completion(.success(fallbackModelEntity), true) // true indicates that this is the final model
+      } else {
+        completion(.failure(error), true) // true indicates that this is the final callback
+      }
+    }
+  }
   public func getModel(
     modelName: String,
     modelType: ModelType = .mlModel,
@@ -109,6 +167,41 @@ private extension AeroEdge {
     }
   }
   
+  func getModelEntity(modelName: String, version: Int, fileExtension: String = "mlmodel") async throws -> ModelEntity {
+    guard let modelURL = localModelStore.getLocalModelURL(for: modelName,
+                                                          version: version,
+                                                          fileExtension: fileExtension) else {
+      throw ModelError.modelNotFound
+    }
+    
+    let modelEntity = ModelEntity(name: modelName,
+                                  version: version,
+                                  url: modelURL,
+                                  fileExtension: fileExtension)
+    return modelEntity
+  }
+
+  func downloadModel(modelName: String,
+                            fileExtension: String = "mlmodel",
+                            remoteVersion: Int,
+                            remoteModelURL: URL,
+                            bundledModelURL: URL?) async throws -> ModelEntity {
+      // Create a ModelEntity instance to represent the model
+      let modelEntity = ModelEntity(name: modelName,
+                                    version: remoteVersion,
+                                    url: remoteModelURL,
+                                    fileExtension: fileExtension)
+      // Download the model using the ModelDownloader
+      let downloadURL = try await modelDownloader.downloadModelAsync(modelEntity)
+      
+      // TODO: HANDLE UNZIP HERE FIRST
+      try FileManager.default.unzipItem(at: downloadURL, to: downloadURL.deletingLastPathComponent())
+      
+      // TODO: Delete zip file
+      try FileManager.default.removeItem(at: downloadURL)
+      return modelEntity
+  }
+
   func downloadAndLoadModel(modelName: String,
                             fileExtension: String = "mlmodel",
                             remoteVersion: Int,
