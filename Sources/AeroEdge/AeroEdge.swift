@@ -7,6 +7,7 @@
 
 import CoreML
 import ZIPFoundation
+import SystemConfiguration
 
 public class AeroEdge: NSObject {
   public static let backgroundIdentifier = "com.app.backgroundModelDownload"
@@ -38,6 +39,45 @@ public class AeroEdge: NSObject {
     completion: @escaping (Result<MLModel, Error>, Bool) -> Void
   ) async {
     do {
+      struct DeviceInfo {
+          let model: String
+          let cpu: String
+          let memory: UInt64
+          let gpu: String?
+          let neuralEngine: String?
+          
+          static func current() -> DeviceInfo {
+              var size: Int = 0
+              sysctlbyname("hw.machine", nil, &size, nil, 0)
+              var machine = [CChar](repeating: 0, count: size)
+              sysctlbyname("hw.machine", &machine, &size, nil, 0)
+              let hardware = String(cString: machine)
+              
+              let cpuInfo = ProcessInfo().processorCount
+              
+              let physicalMemory = ProcessInfo().physicalMemory
+              
+              var gpu: String? = nil
+              if let device = MTLCreateSystemDefaultDevice() {
+                  gpu = "\(device.name)"
+              }
+          
+              
+              return DeviceInfo(model: hardware,
+                                cpu: "\(cpuInfo)",
+                                memory: physicalMemory,
+                                gpu: gpu,
+                                neuralEngine: nil)
+          }
+      }
+
+      let deviceInfo = DeviceInfo.current()
+      print("Model: \(deviceInfo.model)")
+      print("CPU: \(deviceInfo.cpu)")
+      print("GPU: \(String(describing: deviceInfo.gpu))")
+      print("Neural Engine: \(String(describing: deviceInfo.neuralEngine))")
+      print("Memory: \(deviceInfo.memory) bytes")
+
       // Step 1: Fetch remote model version
       let modelInfo = try await modelServer.fetchRemoteModelInfo(for: modelName)
       let remoteVersion = modelInfo.version
